@@ -28,7 +28,7 @@ labVersion = 'cs190_week4_v_1_3'
 # #### In a one-hot-encoding (OHE) scheme, we want to represent each tuple of `(featureID, category)` via its own binary feature.  We can do this in Python by creating a dictionary that maps each tuple to a distinct integer, where the integer corresponds to a binary feature. To start, manually enter the entries in the OHE dictionary associated with the sample dataset by mapping the tuples to consecutive integers starting from zero,  ordering the tuples first by featureID and next by category.
 # #### Later in this lab, we'll use OHE dictionaries to transform data points into compact lists of features that can be used in machine learning algorithms.
 
-# In[2]:
+# In[64]:
 
 # Data for manual OHE
 # Note: the first data point does not include any value for the optional third feature
@@ -38,7 +38,7 @@ sampleThree =  [(0, 'bear'), (1, 'black'), (2, 'salmon')]
 sampleDataRDD = sc.parallelize([sampleOne, sampleTwo, sampleThree])
 
 
-# In[3]:
+# In[65]:
 
 # TODO: Replace <FILL IN> with appropriate code
 sampleOHEDictManual = {}
@@ -51,7 +51,7 @@ sampleOHEDictManual[(2,'mouse')] = 5
 sampleOHEDictManual[(2, 'salmon')] = 6
 
 
-# In[4]:
+# In[66]:
 
 # TEST One-hot-encoding (1a)
 from test_helper import Test
@@ -85,13 +85,13 @@ Test.assertEquals(len(sampleOHEDictManual.keys()), 7,
 # #### Data points can typically be represented with a small number of non-zero OHE features relative to the total number of features that occur in the dataset.  By leveraging this sparsity and using sparse vector representations of OHE data, we can reduce storage and computational burdens.  Below are a few sample vectors represented as dense numpy arrays.  Use [SparseVector](https://spark.apache.org/docs/latest/api/python/pyspark.mllib.html#pyspark.mllib.linalg.SparseVector) to represent them in a sparse fashion, and verify that both the sparse and dense representations yield the same results when computing [dot products](http://en.wikipedia.org/wiki/Dot_product) (we will later use MLlib to train classifiers via gradient descent, and MLlib will need to compute dot products between SparseVectors and dense parameter vectors).
 # #### Use `SparseVector(size, *args)` to create a new sparse vector where size is the length of the vector and args is either a dictionary, a list of (index, value) pairs, or two separate arrays of indices and values (sorted by index).  You'll need to create a sparse vector representation of each dense vector `aDense` and `bDense`.
 
-# In[5]:
+# In[67]:
 
 import numpy as np
 from pyspark.mllib.linalg import SparseVector
 
 
-# In[6]:
+# In[68]:
 
 # TODO: Replace <FILL IN> with appropriate code
 aDense = np.array([0., 3., 0., 4.])
@@ -109,7 +109,7 @@ print bDense.dot(w)
 print bSparse.dot(w)
 
 
-# In[7]:
+# In[69]:
 
 # TEST Sparse Vectors (1b)
 Test.assertTrue(isinstance(aSparse, SparseVector), 'aSparse needs to be an instance of SparseVector')
@@ -123,7 +123,7 @@ Test.assertTrue(bDense.dot(w) == bSparse.dot(w),
 # #### **(1c) OHE features as sparse vectors **
 # #### Now let's see how we can represent the OHE features for points in our sample dataset.  Using the mapping defined by the OHE dictionary from Part (1a), manually define OHE features for the three sample data points using SparseVector format.  Any feature that occurs in a point should have the value 1.0.  For example, the `DenseVector` for a point with features 2 and 4 would be `[0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0]`.
 
-# In[8]:
+# In[70]:
 
 # Reminder of the sample features
 # sampleOne = [(0, 'mouse'), (1, 'black')]
@@ -138,7 +138,7 @@ Test.assertTrue(bDense.dot(w) == bSparse.dot(w),
 #sampleOHEDictManual[(2, 'salmon')] = 6
 
 
-# In[9]:
+# In[71]:
 
 # TODO: Replace <FILL IN> with appropriate code
 sampleOneOHEFeatManual = SparseVector(7, [2,3], [1,1])
@@ -1139,20 +1139,20 @@ pass
 # #### ** (5e) Evaluate on the test set **
 # #### Finally, evaluate the best model from Part (5d) on the test set.  Compare the resulting log loss with the baseline log loss on the test set, which can be computed in the same way that the validation log loss was computed in Part (4f).
 
-# In[63]:
+# In[77]:
 
 # TODO: Replace <FILL IN> with appropriate code
 # Log loss for the best model from (5d)
-logLossTest = evaluateResults()
+logLossTest = evaluateResults(bestModel, hashTestData)
 
 # Log loss for the baseline model
-logLossTestBaseline = <FILL IN>
+logLossTestBaseline = hashTestData.map(lambda lp: computeLogLoss(classOneFracTrain, lp.label)).mean()
 
 print ('Hashed Features Test Log Loss:\n\tBaseline = {0:.3f}\n\tLogReg = {1:.3f}'
        .format(logLossTestBaseline, logLossTest))
 
 
-# In[ ]:
+# In[78]:
 
 # TEST Evaluate on the test set (5e)
 Test.assertTrue(np.allclose(logLossTestBaseline, 0.537438),
